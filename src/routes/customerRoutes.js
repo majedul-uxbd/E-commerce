@@ -4,6 +4,7 @@ const { registerCustomer } = require("../main/customers/add-customer");
 const { getAllCustomers } = require("../main/customers/get-all-customers");
 const { getCustomerDetails } = require("../main/customers/get-customer-details");
 const { updateCustomer } = require("../main/customers/update-customer");
+const { deleteCustomer } = require("../main/customers/delete-customer");
 
 const customerRouter = express.Router();
 
@@ -81,6 +82,27 @@ customerRouter.put("/:id", jwtAuth, async (req, res) => {
                 status: data.status,
                 message: data.message,
                 customer: data.customer,
+            });
+        })
+        .catch((error) => {
+            return res.status(400).send({
+                status: error.status,
+                message: error.message,
+            });
+        });
+});
+
+customerRouter.delete("/delete-customer", jwtAuth, async (req, res) => {
+    const requestData = {
+        customerId: req.body.customerId,
+        user: req.user
+    };
+
+    deleteCustomer(requestData)
+        .then((data) => {
+            return res.status(200).send({
+                status: data.status,
+                message: data.message,
             });
         })
         .catch((error) => {
