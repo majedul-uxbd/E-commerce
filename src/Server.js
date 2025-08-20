@@ -11,6 +11,7 @@ const bodyParser = require("body-parser");
 const { pool } = require("./DB/pool");
 const userRoutes = require("./routes/userRoutes");
 const customerRoutes = require("./routes/customerRoutes");
+const productRouter = require("./routes/productRoutes");
 
 app.use(bodyParser.json());
 app.use(morgan("combined"));
@@ -30,6 +31,7 @@ app.use(express.json({ limit: "10mb" }));
 // Routes
 app.use("/users", userRoutes);
 app.use("/customers", customerRoutes);
+app.use("/products", productRouter);
 // Database connection check
 pool
   .getConnection()
