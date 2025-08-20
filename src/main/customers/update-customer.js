@@ -2,9 +2,6 @@ const { pool } = require("../../DB/pool");
 const { format } = require("date-fns");
 const bcrypt = require("bcryptjs");
 
-const checkIfUserIsAdmin = (user) => {
-    return user && user.role === 'admin';
-};
 
 const checkIfCustomerExists = async (customerId) => {
     const _query = `
@@ -111,13 +108,6 @@ const updateCustomer = async (requestData) => {
     const { customerId, updateData, user } = requestData;
 
     try {
-        // Check if user is admin
-        if (!checkIfUserIsAdmin(user)) {
-            return Promise.reject({
-                status: "failed",
-                message: "Access denied. Admin role required.",
-            });
-        }
 
         // Validate customer ID
         if (!customerId) {
@@ -137,7 +127,7 @@ const updateCustomer = async (requestData) => {
         }
 
         // Check if at least one field is provided for update
-        if (!updateData.name && !updateData.email && !updateData.address && !updateData.phone && !updateData.password) {
+        if (!updateData.name || !updateData.email && !updateData.address && !updateData.phone && !updateData.password) {
             return Promise.reject({
                 status: "failed",
                 message: "At least one field is required to update",
