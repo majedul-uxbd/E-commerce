@@ -69,10 +69,11 @@ customerRouter.post("/get-customer-details", jwtAuth, async (req, res) => {
         });
 });
 
-customerRouter.put("/:id", jwtAuth, async (req, res) => {
+customerRouter.post("/update-customer", jwtAuth, async (req, res) => {
+    const { customerId, ...updateData } = req.body;
     const requestData = {
-        customerId: req.params.id,
-        updateData: req.body,
+        customerId: customerId,
+        updateData: updateData,
         user: req.user
     };
 
@@ -92,7 +93,7 @@ customerRouter.put("/:id", jwtAuth, async (req, res) => {
         });
 });
 
-customerRouter.delete("/delete-customer", jwtAuth, async (req, res) => {
+customerRouter.post("/delete-customer", jwtAuth, async (req, res) => {
     const requestData = {
         customerId: req.body.customerId,
         user: req.user
