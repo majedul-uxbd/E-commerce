@@ -2,6 +2,7 @@ const express = require("express");
 const jwtAuth = require("../middleware/jwtAuth");
 const { addProduct } = require("../main/products/add-product");
 const { getAllProducts } = require("../main/products/get-all-products");
+const { getProductDetails } = require("../main/products/get-product-details");
 
 const productRouter = express.Router();
 
@@ -37,6 +38,28 @@ productRouter.get("/", jwtAuth, async (req, res) => {
                 status: data.status,
                 message: data.message,
                 products: data.products,
+            });
+        })
+        .catch((error) => {
+            return res.status(400).send({
+                status: error.status,
+                message: error.message,
+            });
+        });
+});
+
+productRouter.post("/get-product-details", jwtAuth, async (req, res) => {
+    const requestData = {
+        productId: req.body.productId,
+        user: req.user
+    };
+
+    getProductDetails(requestData)
+        .then((data) => {
+            return res.status(200).send({
+                status: data.status,
+                message: data.message,
+                product: data.product,
             });
         })
         .catch((error) => {
