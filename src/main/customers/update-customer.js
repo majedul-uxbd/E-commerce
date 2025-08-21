@@ -118,13 +118,106 @@ const updateCustomer = async (requestData) => {
             });
         }
 
-        // Todo : Check if at least one field is provided for update
-        if (!updateData.name || !updateData.email && !updateData.address && !updateData.phone && !updateData.password) {
+        //Check if at least one field is provided for update
+        if (updateData.name) {
+            if (typeof updateData.name === 'string') {
+                if (updateData.name.length < 4 || updateData.name.length > 60) {
+                    return Promise.reject({
+                        status: "failed",
+                        message: "Name must be between 4 and 60 characters",
+                    });
+                }
+            } else {
+                return Promise.reject({
+                    status: "failed",
+                    message: "Name must be a string",
+                });
+            }
+        } else {
             return Promise.reject({
                 status: "failed",
-                message: "At least one field is required to update",
+                message: "Name is required",
             });
         }
+
+        // Email validation
+        if (updateData.email) {
+            if (typeof updateData.email === 'string') {
+                if (updateData.email.length < 5 || updateData.email.length > 100) {
+                    return Promise.reject({
+                        status: "failed",
+                        message: "Email must be between 5 and 100 characters",
+                    });
+                }
+                if (!/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(updateData.email)) {
+                    return Promise.reject({
+                        status: "failed",
+                        message: "Invalid email format",
+                    });
+                }
+            } else {
+                return Promise.reject({
+                    status: "failed",
+                    message: "Email must be a string",
+                });
+            }
+        } else {
+            return Promise.reject({
+                status: "failed",
+                message: "Email is required",
+            });
+        }
+
+        // Address validation
+        if (updateData.address) {
+            if (typeof updateData.address === 'string') {
+                if (updateData.address.length < 10 || updateData.address.length > 200) {
+                    return Promise.reject({
+                        status: "failed",
+                        message: "Address must be between 10 and 200 characters",
+                    });
+                }
+            } else {
+                return Promise.reject({
+                    status: "failed",
+                    message: "Address must be a string",
+                });
+            }
+        } else {
+            return Promise.reject({
+                status: "failed",
+                message: "Address is required",
+            });
+        }
+
+        // Phone validation
+        if (updateData.phone) {
+            if (typeof updateData.phone === 'string') {
+                if (updateData.phone.length < 10 || updateData.phone.length > 15) {
+                    return Promise.reject({
+                        status: "failed",
+                        message: "Phone must be between 10 and 15 characters",
+                    });
+                }
+                if (!/^\d+$/.test(updateData.phone)) {
+                    return Promise.reject({
+                        status: "failed",
+                        message: "Phone must contain only numbers",
+                    });
+                }
+            } else {
+                return Promise.reject({
+                    status: "failed",
+                    message: "Phone must be a string",
+                });
+            }
+        } else {
+            return Promise.reject({
+                status: "failed",
+                message: "Phone is required",
+            });
+        }
+
 
         // If email is being updated, check if it already exists for another customer
         if (updateData.email) {
