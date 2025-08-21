@@ -12,7 +12,8 @@ const { pool } = require("./DB/pool");
 const userRoutes = require("./routes/userRoutes");
 const customerRoutes = require("./routes/customerRoutes");
 const productRoutes = require("./routes/productRoutes");
-const cardRoutes = require("./routes/cardRoutes");
+const cartRoutes = require("./routes/cartRoutes");
+
 
 app.use(bodyParser.json());
 app.use(morgan("combined"));
@@ -33,7 +34,7 @@ app.use(express.json({ limit: "10mb" }));
 app.use("/users", userRoutes);
 app.use("/customers", customerRoutes);
 app.use("/products", productRoutes);
-// app.use("/cards", cardRoutes);
+app.use("/carts", cartRoutes);
 // Database connection check
 pool
   .getConnection()
