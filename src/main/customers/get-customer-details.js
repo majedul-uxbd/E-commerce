@@ -34,19 +34,6 @@ const getCustomerDetails = async (requestData) => {
 
     try {
 
-        // Validate customer ID
-        if (!customerId) {
-            return Promise.reject({
-                status: "failed",
-                message: "Customer ID is required",
-            });
-        } else if (typeof customerId !== 'number') {
-            return Promise.reject({
-                status: "failed",
-                message: "Customer ID must be a number",
-            });
-        }
-
         const customer = await fetchCustomerById(customerId);
 
         if (customer === false) {

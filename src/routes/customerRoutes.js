@@ -6,6 +6,7 @@ const { getCustomerDetails } = require("../main/customers/get-customer-details")
 const { updateCustomer } = require("../main/customers/update-customer");
 const { deleteCustomer } = require("../main/customers/delete-customer");
 const adminAuth = require("../middleware/adminAuth");
+const validateCustomerId = require("../middleware/validateCustomerId");
 
 const customerRouter = express.Router();
 
@@ -48,7 +49,7 @@ customerRouter.get("/", jwtAuth, adminAuth, async (req, res) => {
 });
 
 
-customerRouter.post("/get-customer-details", jwtAuth, adminAuth, async (req, res) => {
+customerRouter.post("/get-customer-details", jwtAuth, adminAuth, validateCustomerId, async (req, res) => {
     const requestData = {
         customerId: req.body.customerId,
         user: req.user
@@ -70,7 +71,7 @@ customerRouter.post("/get-customer-details", jwtAuth, adminAuth, async (req, res
         });
 });
 
-customerRouter.post("/update-customer", jwtAuth, adminAuth, async (req, res) => {
+customerRouter.post("/update-customer", jwtAuth, adminAuth, validateCustomerId, async (req, res) => {
     const { customerId, ...updateData } = req.body;
     const requestData = {
         customerId: customerId,
@@ -94,7 +95,7 @@ customerRouter.post("/update-customer", jwtAuth, adminAuth, async (req, res) => 
         });
 });
 
-customerRouter.post("/delete-customer", jwtAuth, adminAuth, async (req, res) => {
+customerRouter.post("/delete-customer", jwtAuth, adminAuth, validateCustomerId, async (req, res) => {
     const requestData = {
         customerId: req.body.customerId,
         user: req.user

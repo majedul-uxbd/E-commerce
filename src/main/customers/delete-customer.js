@@ -49,14 +49,6 @@ const deleteCustomer = async (requestData) => {
 
     try {
 
-        // Validate customer ID
-        if (!customerId) {
-            return Promise.reject({
-                status: "failed",
-                message: "Customer ID is required",
-            });
-        }
-
         // Check if customer exists
         const existingCustomer = await checkIfCustomerExists(customerId);
         if (existingCustomer === false) {

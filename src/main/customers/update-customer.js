@@ -105,17 +105,9 @@ const updateCustomerData = async (customerId, updateFields) => {
  * @returns {Promise} Resolves with success message or rejects with error message 
  */
 const updateCustomer = async (requestData) => {
-    const { customerId, updateData, user } = requestData;
+    const { customerId, updateData } = requestData;
 
     try {
-
-        // Validate customer ID
-        if (!customerId) {
-            return Promise.reject({
-                status: "failed",
-                message: "Customer ID is required",
-            });
-        }
 
         // Check if customer exists
         const existingCustomer = await checkIfCustomerExists(customerId);
@@ -126,7 +118,7 @@ const updateCustomer = async (requestData) => {
             });
         }
 
-        // Check if at least one field is provided for update
+        // Todo : Check if at least one field is provided for update
         if (!updateData.name || !updateData.email && !updateData.address && !updateData.phone && !updateData.password) {
             return Promise.reject({
                 status: "failed",
