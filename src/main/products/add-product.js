@@ -1,29 +1,6 @@
 const { pool } = require("../../DB/pool");
 const { format } = require("date-fns");
 
-
-const validateProductData = (productData) => {
-    const { name, description, price, stock_quantity } = productData;
-
-    if (!name || typeof name !== "string" || name.trim().length === 0) {
-        return "Product name is required";
-    }
-
-    if (!description || typeof description !== "string" || description.trim().length === 0) {
-        return "Product description is required";
-    }
-
-    if (!price || typeof price !== "number" || price <= 0) {
-        return "Valid price is required (must be greater than 0)";
-    }
-
-    if (!stock_quantity || typeof stock_quantity !== "number" || stock_quantity < 0) {
-        return "Valid stock quantity is required (must be 0 or greater)";
-    }
-
-    return null;
-};
-
 const checkIfProductNameExists = async (name) => {
     const _query = `
         SELECT
@@ -70,19 +47,10 @@ const insertProductData = async (values) => {
  * @returns {Promise} Resolves with success message or rejects with error message 
  */
 const addProduct = async (requestData) => {
-    const { productData, user } = requestData;
+    const { productData } = requestData;
     const created_at = format(new Date(), "yyyy-MM-dd HH:mm:ss");
 
     try {
-
-        // Validate all required fields
-        const validationError = validateProductData(productData);
-        if (validationError) {
-            return Promise.reject({
-                status: "failed",
-                message: validationError,
-            });
-        }
 
         const isExist = await checkIfProductNameExists(productData.name);
         if (isExist === true) {

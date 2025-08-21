@@ -48,15 +48,6 @@ const deleteProduct = async (requestData) => {
     const { productId } = requestData;
 
     try {
-
-        // Validate product ID
-        if (!productId) {
-            return Promise.reject({
-                status: "failed",
-                message: "Product ID is required",
-            });
-        }
-
         // Check if product exists
         const existingProduct = await checkIfProductExists(productId);
         if (existingProduct === false) {

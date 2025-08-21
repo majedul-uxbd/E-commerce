@@ -30,17 +30,9 @@ const fetchProductById = async (productId) => {
  * @returns {Promise} Resolves with product details or rejects with error message 
  */
 const getProductDetails = async (requestData) => {
-    const { productId, user } = requestData;
+    const { productId } = requestData;
 
     try {
-
-        // Validate product ID
-        if (!productId) {
-            return Promise.reject({
-                status: "failed",
-                message: "Product ID is required",
-            });
-        }
 
         const product = await fetchProductById(productId);
 

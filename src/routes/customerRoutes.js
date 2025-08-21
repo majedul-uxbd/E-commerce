@@ -6,7 +6,7 @@ const { getCustomerDetails } = require("../main/customers/get-customer-details")
 const { updateCustomer } = require("../main/customers/update-customer");
 const { deleteCustomer } = require("../main/customers/delete-customer");
 const adminAuth = require("../middleware/adminAuth");
-const validateCustomerId = require("../middleware/validateCustomerId");
+const validateCustomerId = require("../middleware/customer-validation/validateCustomerId");
 
 const customerRouter = express.Router();
 

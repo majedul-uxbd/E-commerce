@@ -25,23 +25,6 @@ const checkIfProductExists = async (productId) => {
     }
 };
 
-const checkIfProductNameExistsForOtherProduct = async (name, productId) => {
-    const _query = `
-        SELECT
-            id
-        FROM
-            products
-        WHERE
-            name = ? AND id != ?
-    `;
-
-    try {
-        const [rows] = await pool.query(_query, [name, productId]);
-        return rows.length > 0 ? true : false;
-    } catch (error) {
-        return Promise.reject(error);
-    }
-};
 
 const updateProductData = async (productId, updateFields) => {
     const updated_at = format(new Date(), "yyyy-MM-dd HH:mm:ss");
@@ -98,59 +81,15 @@ const updateProductData = async (productId, updateFields) => {
  * @returns {Promise} Resolves with success message or rejects with error message 
  */
 const updateProduct = async (requestData) => {
-    const { productId, updateData, user } = requestData;
+    const { productId, updateData } = requestData;
 
     try {
-
-        // Validate product ID
-        if (!productId) {
-            return Promise.reject({
-                status: "failed",
-                message: "Product ID is required",
-            });
-        }
-
         // Check if product exists
         const existingProduct = await checkIfProductExists(productId);
         if (existingProduct === false) {
             return Promise.reject({
                 status: "failed",
                 message: "Product not found",
-            });
-        }
-
-        // Check if at least one field is provided for update
-        if (!updateData.name && !updateData.description && !updateData.price && updateData.stock_quantity === undefined) {
-            return Promise.reject({
-                status: "failed",
-                message: "At least one field is required to update",
-            });
-        }
-
-        // If name is being updated, check if it already exists for another product
-        if (updateData.name) {
-            const nameExists = await checkIfProductNameExistsForOtherProduct(updateData.name, productId);
-            if (nameExists === true) {
-                return Promise.reject({
-                    status: "failed",
-                    message: "Product name already exists for another product",
-                });
-            }
-        }
-
-        // Validate price if provided
-        if (updateData.price && (typeof updateData.price !== "number" || updateData.price <= 0)) {
-            return Promise.reject({
-                status: "failed",
-                message: "Valid price is required (must be greater than 0)",
-            });
-        }
-
-        // Validate stock quantity if provided
-        if (updateData.stock_quantity !== undefined && (typeof updateData.stock_quantity !== "number" || updateData.stock_quantity < 0)) {
-            return Promise.reject({
-                status: "failed",
-                message: "Valid stock quantity is required (must be 0 or greater)",
             });
         }
 
