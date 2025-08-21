@@ -5,10 +5,11 @@ const { getAllProducts } = require("../main/products/get-all-products");
 const { getProductDetails } = require("../main/products/get-product-details");
 const { updateProduct } = require("../main/products/update-product");
 const { deleteProduct } = require("../main/products/delete-product");
+const adminAuth = require("../middleware/adminAuth");
 
 const productRouter = express.Router();
 
-productRouter.post("/create", jwtAuth, async (req, res) => {
+productRouter.post("/create", jwtAuth, adminAuth, async (req, res) => {
     const requestData = {
         productData: req.body,
         user: req.user
@@ -29,7 +30,7 @@ productRouter.post("/create", jwtAuth, async (req, res) => {
         });
 });
 
-productRouter.get("/", jwtAuth, async (req, res) => {
+productRouter.get("/", jwtAuth, adminAuth, async (req, res) => {
     const requestData = {
         user: req.user
     };
@@ -50,7 +51,7 @@ productRouter.get("/", jwtAuth, async (req, res) => {
         });
 });
 
-productRouter.post("/get-product-details", jwtAuth, async (req, res) => {
+productRouter.post("/get-product-details", jwtAuth, adminAuth, async (req, res) => {
     const requestData = {
         productId: req.body.productId,
         user: req.user
@@ -72,7 +73,7 @@ productRouter.post("/get-product-details", jwtAuth, async (req, res) => {
         });
 });
 
-productRouter.post("/update-product", jwtAuth, async (req, res) => {
+productRouter.post("/update-product", jwtAuth, adminAuth, async (req, res) => {
     const { productId, ...updateData } = req.body;
     const requestData = {
         productId: productId,
@@ -96,7 +97,7 @@ productRouter.post("/update-product", jwtAuth, async (req, res) => {
         });
 });
 
-productRouter.post("/delete-product", jwtAuth, async (req, res) => {
+productRouter.post("/delete-product", jwtAuth, adminAuth, async (req, res) => {
     const requestData = {
         productId: req.body.productId,
         user: req.user

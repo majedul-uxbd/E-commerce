@@ -1,9 +1,6 @@
 const { pool } = require("../../DB/pool");
 const { format } = require("date-fns");
 
-const checkIfUserIsAdmin = (user) => {
-    return user && user.role === 'admin';
-};
 
 const validateProductData = (productData) => {
     const { name, description, price, stock_quantity } = productData;
@@ -77,13 +74,6 @@ const addProduct = async (requestData) => {
     const created_at = format(new Date(), "yyyy-MM-dd HH:mm:ss");
 
     try {
-        // Check if user is admin
-        if (!checkIfUserIsAdmin(user)) {
-            return Promise.reject({
-                status: "failed",
-                message: "Access denied. Admin role required.",
-            });
-        }
 
         // Validate all required fields
         const validationError = validateProductData(productData);

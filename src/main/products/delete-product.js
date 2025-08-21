@@ -1,9 +1,5 @@
 const { pool } = require("../../DB/pool");
 
-const checkIfUserIsAdmin = (user) => {
-    return user && user.role === 'admin';
-};
-
 const checkIfProductExists = async (productId) => {
     const _query = `
         SELECT
@@ -49,16 +45,9 @@ const deleteProductData = async (productId) => {
  * @returns {Promise} Resolves with success message or rejects with error message 
  */
 const deleteProduct = async (requestData) => {
-    const { productId, user } = requestData;
+    const { productId } = requestData;
 
     try {
-        // Check if user is admin
-        if (!checkIfUserIsAdmin(user)) {
-            return Promise.reject({
-                status: "failed",
-                message: "Access denied. Admin role required.",
-            });
-        }
 
         // Validate product ID
         if (!productId) {

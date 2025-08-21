@@ -1,9 +1,5 @@
 const { pool } = require("../../DB/pool");
 
-const checkIfUserIsAdmin = (user) => {
-    return user && user.role === 'admin';
-};
-
 const fetchProductById = async (productId) => {
     const _query = `
         SELECT
@@ -37,13 +33,6 @@ const getProductDetails = async (requestData) => {
     const { productId, user } = requestData;
 
     try {
-        // Check if user is admin
-        if (!checkIfUserIsAdmin(user)) {
-            return Promise.reject({
-                status: "failed",
-                message: "Access denied. Admin role required.",
-            });
-        }
 
         // Validate product ID
         if (!productId) {
