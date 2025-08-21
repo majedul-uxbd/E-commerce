@@ -41,7 +41,7 @@ const generateJWTToken = (userData) => {
                 role: userData.role
             },
             process.env.JWT_SECRET,
-            { expiresIn: "1h" }
+            { expiresIn: "1d" }
         );
         return token;
     } catch (error) {
