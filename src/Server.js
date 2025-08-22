@@ -13,6 +13,8 @@ const userRoutes = require("./routes/userRoutes");
 const customerRoutes = require("./routes/customerRoutes");
 const productRoutes = require("./routes/productRoutes");
 const cartRoutes = require("./routes/cartRoutes");
+const ordersRoutes = require("./routes/orderRoutes");
+
 
 
 app.use(bodyParser.json());
@@ -35,6 +37,7 @@ app.use("/users", userRoutes);
 app.use("/customers", customerRoutes);
 app.use("/products", productRoutes);
 app.use("/carts", cartRoutes);
+app.use("/orders", ordersRoutes);
 // Database connection check
 pool
   .getConnection()
