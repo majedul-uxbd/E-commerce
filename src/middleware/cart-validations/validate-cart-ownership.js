@@ -12,8 +12,8 @@ const validateCartOwnership = async (req, res, next) => {
             });
         }
 
-        // Check if cart exists and get owner
-        const _query = `SELECT customer_id FROM carts WHERE id = ?`;
+        // Check if cart exists and get full cart data
+        const _query = `SELECT id, customer_id FROM carts WHERE id = ?`;
         const [rows] = await pool.query(_query, [cartId]);
 
         if (rows.length === 0) {
@@ -23,11 +23,15 @@ const validateCartOwnership = async (req, res, next) => {
             });
         }
 
-        const cartOwnerCustomerId = rows[0].customer_id;
+        const cartData = rows[0];
+        const cartOwnerCustomerId = cartData.customer_id;
+
+        // Store cart data in request for use in the route handler
+        req.cartData = cartData;
 
         // Check if user is admin
         if (user && user.role === 'admin') {
-            console.log("✅ Admin access granted for cart deletion");
+            console.log("✅ Admin access granted for cart operation");
             return next();
         }
 
@@ -49,7 +53,7 @@ const validateCartOwnership = async (req, res, next) => {
                 console.log(`❌ Cart ownership mismatch. User: ${user.customer_id}, Cart Owner: ${cartOwnerCustomerId}`);
                 return res.status(403).send({
                     status: "failed",
-                    message: "You can only delete your own cart items",
+                    message: "You can only access your own cart items",
                 });
             }
         }

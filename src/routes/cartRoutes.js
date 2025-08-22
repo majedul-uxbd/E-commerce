@@ -1,16 +1,19 @@
 const express = require('express');
 const jwtAuth = require('../middleware/jwtAuth');
 const { addCartItem } = require('../main/carts/add-cart');
-const validateCartData = require('../middleware/cart-validations/validate-cart-data');
 const validateCartPermission = require('../middleware/cart-validations/validate-cart-permission');
 const { getCustomerCartItems } = require('../main/carts/get-customer-carts');
 const { deleteCartItem } = require('../main/carts/delete-cart');
 const validateCartOwnership = require('../middleware/cart-validations/validate-cart-ownership');
+const validateCartId = require('../middleware/cart-validations/validate-cart-id');
+const validateProductId = require('../middleware/cart-validations/validate-product-id');
+const validateQuantity = require('../middleware/cart-validations/validate-quantity');
+
 
 const cartRouter = express.Router();
 
 //Tested
-cartRouter.post("/", jwtAuth, validateCartPermission, validateCartData, async (req, res) => {
+cartRouter.post("/", jwtAuth, validateProductId, validateQuantity, validateCartPermission, async (req, res) => {
     const requestData = {
         cartData: req.body,
         user: req.user
@@ -60,7 +63,7 @@ cartRouter.post("/getCustomerId", jwtAuth, validateCartPermission, async (req, r
 });
 
 
-cartRouter.post("/delete-cart", jwtAuth, validateCartOwnership, async (req, res) => {
+cartRouter.post("/delete-cart", jwtAuth, validateCartId, validateCartOwnership, async (req, res) => {
     const requestData = {
         cartId: req.body.cartId,
         user: req.user
