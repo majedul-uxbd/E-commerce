@@ -1,0 +1,436 @@
+Here are comprehensive Postman tests for all the Orders APIs:
+
+Prerequisites Setup
+1. Environment Variables (Create in Postman)
+text
+base_url: http://localhost:3000
+auth_token: (will be set after login)
+customer_id: (will be set after login)
+order_id: (will be set after creating an order)
+2. Pre-request Script for Authentication (Add to Collection)
+javascript
+// Add this to your Orders collection's Pre-request Scripts
+if (!pm.environment.get("auth_token")) {
+    console.log("No auth token found. Please login first.");
+}
+Test Cases
+Test 1: Create Order from Cart Items
+Method: POST
+URL: {{base_url}}/orders
+Headers:
+
+text
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+Body (raw JSON):
+
+json
+{
+  "cartIds": [1, 2]
+}
+Tests Script:
+
+javascript
+pm.test("Status code is 201", function () {
+    pm.response.to.have.status(201);
+});
+
+pm.test("Response has correct structure", function () {
+    var jsonData = pm.response.json();
+    pm.expect(jsonData).to.have.property('status');
+    pm.expect(jsonData).to.have.property('message');
+    pm.expect(jsonData).to.have.property('order');
+    pm.expect(jsonData.status).to.eql('success');
+});
+
+pm.test("Order details are correct", function () {
+    var jsonData = pm.response.json();
+    pm.expect(jsonData.order).to.have.property('id');
+    pm.expect(jsonData.order).to.have.property('customer_id');
+    pm.expect(jsonData.order).to.have.property('total_amount');
+    pm.expect(jsonData.order).to.have.property('status');
+    pm.expect(jsonData.order.status).to.eql('pending');
+    
+    // Save order_id for future tests
+    pm.environment.set("order_id", jsonData.order.id);
+});
+
+pm.test("Response time is less than 3000ms", function () {
+    pm.expect(pm.response.responseTime).to.be.below(3000);
+});
+Test 2: Create Order - Invalid Cart IDs
+Method: POST
+URL: {{base_url}}/orders
+Headers:
+
+text
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+Body (raw JSON):
+
+json
+{
+  "cartIds": [-1, 0, "invalid"]
+}
+Tests Script:
+
+javascript
+pm.test("Status code is 400", function () {
+    pm.response.to.have.status(400);
+});
+
+pm.test("Error response structure", function () {
+    var jsonData = pm.response.json();
+    pm.expect(jsonData).to.have.property('status');
+    pm.expect(jsonData).to.have.property('message');
+    pm.expect(jsonData.status).to.eql('failed');
+});
+
+pm.test("Proper validation error message", function () {
+    var jsonData = pm.response.json();
+    pm.expect(jsonData.message).to.include('Invalid cart ID');
+});
+Test 3: Create Order - Empty Cart IDs
+Method: POST
+URL: {{base_url}}/orders
+Headers:
+
+text
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+Body (raw JSON):
+
+json
+{
+  "cartIds": []
+}
+Tests Script:
+
+javascript
+pm.test("Status code is 400", function () {
+    pm.response.to.have.status(400);
+});
+
+pm.test("Empty cart IDs validation", function () {
+    var jsonData = pm.response.json();
+    pm.expect(jsonData.status).to.eql('failed');
+    pm.expect(jsonData.message).to.include('Cart IDs are required');
+    pm.expect(jsonData.code).to.eql('INVALID_CART_IDS');
+});
+Test 4: Create Order - Non-existent Cart IDs
+Method: POST
+URL: {{base_url}}/orders
+Headers:
+
+text
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+Body (raw JSON):
+
+json
+{
+  "cartIds": [999999, 888888]
+}
+Tests Script:
+
+javascript
+pm.test("Status code is 404", function () {
+    pm.response.to.have.status(404);
+});
+
+pm.test("Cart not found error", function () {
+    var jsonData = pm.response.json();
+    pm.expect(jsonData.status).to.eql('failed');
+    pm.expect(jsonData.message).to.include('cart items not found');
+    pm.expect(jsonData.code).to.eql('CART_ITEMS_NOT_FOUND');
+});
+Test 5: Get Customer Orders
+Method: GET
+URL: {{base_url}}/orders/{{customer_id}}
+Headers:
+
+text
+Authorization: Bearer {{auth_token}}
+Tests Script:
+
+javascript
+pm.test("Status code is 200", function () {
+    pm.response.to.have.status(200);
+});
+
+pm.test("Orders response structure", function () {
+    var jsonData = pm.response.json();
+    pm.expect(jsonData).to.have.property('status');
+    pm.expect(jsonData).to.have.property('message');
+    pm.expect(jsonData).to.have.property('orders');
+    pm.expect(jsonData).to.have.property('summary');
+    pm.expect(jsonData.status).to.eql('success');
+});
+
+pm.test("Orders array structure", function () {
+    var jsonData = pm.response.json();
+    if (jsonData.orders.length > 0) {
+        var order = jsonData.orders[0];
+        pm.expect(order).to.have.property('id');
+        pm.expect(order).to.have.property('customer_id');
+        pm.expect(order).to.have.property('total_amount');
+        pm.expect(order).to.have.property('status');
+        pm.expect(order).to.have.property('created_at');
+        pm.expect(order).to.have.property('items');
+    }
+});
+
+pm.test("Summary structure", function () {
+    var jsonData = pm.response.json();
+    pm.expect(jsonData.summary).to.have.property('total_orders');
+    pm.expect(jsonData.summary).to.have.property('total_spent');
+    pm.expect(jsonData.summary.total_orders).to.be.a('number');
+    pm.expect(jsonData.summary.total_spent).to.be.a('string');
+});
+Test 6: Get Orders - Invalid Customer ID
+Method: GET
+URL: {{base_url}}/orders/-1
+Headers:
+
+text
+Authorization: Bearer {{auth_token}}
+Tests Script:
+
+javascript
+pm.test("Status code is 400", function () {
+    pm.response.to.have.status(400);
+});
+
+pm.test("Invalid customer ID error", function () {
+    var jsonData = pm.response.json();
+    pm.expect(jsonData.status).to.eql('failed');
+    pm.expect(jsonData.message).to.include('Customer ID cannot be negative');
+    pm.expect(jsonData.code).to.eql('CUSTOMER_ID_NEGATIVE');
+});
+Test 7: Get Orders - Non-existent Customer
+Method: GET
+URL: {{base_url}}/orders/999999
+Headers:
+
+text
+Authorization: Bearer {{auth_token}}
+Tests Script:
+
+javascript
+pm.test("Status code is 200", function () {
+    pm.response.to.have.status(200);
+});
+
+pm.test("No orders found", function () {
+    var jsonData = pm.response.json();
+    pm.expect(jsonData.status).to.eql('success');
+    pm.expect(jsonData.message).to.include('No orders found');
+    pm.expect(jsonData.orders).to.be.an('array').that.is.empty;
+    pm.expect(jsonData.summary.total_orders).to.eql(0);
+});
+Test 8: Update Order Status - Valid
+Method: PATCH
+URL: {{base_url}}/orders/{{order_id}}/status
+Headers:
+
+text
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+Body (raw JSON):
+
+json
+{
+  "status": "completed"
+}
+Tests Script:
+
+javascript
+pm.test("Status code is 200", function () {
+    pm.response.to.have.status(200);
+});
+
+pm.test("Order status updated", function () {
+    var jsonData = pm.response.json();
+    pm.expect(jsonData.status).to.eql('success');
+    pm.expect(jsonData.message).to.include('Order status updated successfully');
+    pm.expect(jsonData.order).to.have.property('id');
+    pm.expect(jsonData.order).to.have.property('status');
+    pm.expect(jsonData.order.status).to.eql('completed');
+});
+Test 9: Update Order Status - Invalid Status
+Method: PATCH
+URL: {{base_url}}/orders/{{order_id}}/status
+Headers:
+
+text
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+Body (raw JSON):
+
+json
+{
+  "status": "invalid_status"
+}
+Tests Script:
+
+javascript
+pm.test("Status code is 400", function () {
+    pm.response.to.have.status(400);
+});
+
+pm.test("Invalid status error", function () {
+    var jsonData = pm.response.json();
+    pm.expect(jsonData.status).to.eql('failed');
+    pm.expect(jsonData.message).to.include('Invalid order status');
+    pm.expect(jsonData.code).to.eql('INVALID_STATUS');
+});
+Test 10: Update Order Status - Missing Status
+Method: PATCH
+URL: {{base_url}}/orders/{{order_id}}/status
+Headers:
+
+text
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+Body (raw JSON):
+
+json
+{}
+Tests Script:
+
+javascript
+pm.test("Status code is 400", function () {
+    pm.response.to.have.status(400);
+});
+
+pm.test("Missing status error", function () {
+    var jsonData = pm.response.json();
+    pm.expect(jsonData.status).to.eql('failed');
+    pm.expect(jsonData.message).to.include('Order status is required');
+    pm.expect(jsonData.code).to.eql('STATUS_MISSING');
+});
+Test 11: Update Order Status - Invalid Order ID
+Method: PATCH
+URL: {{base_url}}/orders/-1/status
+Headers:
+
+text
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+Body (raw JSON):
+
+json
+{
+  "status": "completed"
+}
+Tests Script:
+
+javascript
+pm.test("Status code is 400", function () {
+    pm.response.to.have.status(400);
+});
+
+pm.test("Invalid order ID error", function () {
+    var jsonData = pm.response.json();
+    pm.expect(jsonData.status).to.eql('failed');
+    pm.expect(jsonData.message).to.include('Order ID cannot be negative');
+    pm.expect(jsonData.code).to.eql('ORDER_ID_NEGATIVE');
+});
+Test 12: Update Order Status - Non-existent Order
+Method: PATCH
+URL: {{base_url}}/orders/999999/status
+Headers:
+
+text
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+Body (raw JSON):
+
+json
+{
+  "status": "completed"
+}
+Tests Script:
+
+javascript
+pm.test("Status code is 404", function () {
+    pm.response.to.have.status(404);
+});
+
+pm.test("Order not found error", function () {
+    var jsonData = pm.response.json();
+    pm.expect(jsonData.status).to.eql('failed');
+    pm.expect(jsonData.message).to.include('Order not found');
+});
+Test 13: Unauthorized Access
+Method: POST
+URL: {{base_url}}/orders
+Headers:
+
+text
+Content-Type: application/json
+Body (raw JSON):
+
+json
+{
+  "cartIds": [1, 2]
+}
+Tests Script:
+
+javascript
+pm.test("Status code is 401", function () {
+    pm.response.to.have.status(401);
+});
+
+pm.test("Unauthorized error", function () {
+    var jsonData = pm.response.json();
+    pm.expect(jsonData.status).to.eql('failed');
+    pm.expect(jsonData.message).to.include('token' || 'unauthorized' || 'authentication');
+});
+Test Execution Order
+Login first to get authentication token
+
+Add items to cart (using your cart API)
+
+Run Order tests in this sequence:
+
+Test 13 (Unauthorized)
+
+Test 2, 3, 4 (Invalid create order scenarios)
+
+Test 1 (Valid create order)
+
+Test 5 (Get customer orders)
+
+Test 6, 7 (Invalid get orders scenarios)
+
+Test 8 (Valid update status)
+
+Test 9, 10, 11, 12 (Invalid update scenarios)
+
+Collection-level Test Scripts
+Pre-request Script (Collection level):
+
+javascript
+// Check if authenticated
+if (!pm.environment.get("auth_token")) {
+    console.log("⚠️ No auth token. Please login first.");
+}
+
+// Log the request
+console.log(`Making ${pm.request.method} request to: ${pm.request.url}`);
+Test Script (Collection level):
+
+javascript
+// Log response details
+console.log(`Response: ${pm.response.status} ${pm.response.reason()}`);
+console.log(`Response time: ${pm.response.responseTime}ms`);
+
+// Common tests for all endpoints
+pm.test("Response has JSON content-type", function () {
+    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');
+});
+
+pm.test("Response is valid JSON", function () {
+    pm.response.to.be.json;
+});
