@@ -34,7 +34,7 @@ cartRouter.post("/", jwtAuth, validateProductId, validateQuantity, validateCartP
         });
 });
 
-// For getting customer cart items - auto-assign customer_id
+
 cartRouter.post("/getCustomerId", jwtAuth, validateCartPermission, async (req, res) => {
     const requestData = {
         customerId: req.body.customer_id,
