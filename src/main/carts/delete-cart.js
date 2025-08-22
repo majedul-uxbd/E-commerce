@@ -1,5 +1,17 @@
 const { pool } = require("../../DB/pool");
 
+const checkCartExists = async (cartId) => {
+    const _query = `SELECT id, customer_id FROM carts WHERE id = ?`;
+
+    try {
+        const [rows] = await pool.query(_query, [cartId]);
+        return rows.length > 0 ? rows[0] : false;
+    } catch (error) {
+        console.log("🚀 ~ checkCartExists ~ error:", error);
+        return Promise.reject(error);
+    }
+};
+
 const deleteCartItemData = async (cartId) => {
     const _query = `DELETE FROM carts WHERE id = ?`;
 
@@ -18,14 +30,31 @@ const deleteCartItemData = async (cartId) => {
  * @returns {Promise} Resolves with success message or rejects with error message 
  */
 const deleteCartItem = async (requestData) => {
-    const { cartId } = requestData;
+    const { cartId, user } = requestData;
 
     try {
-        const isDeleted = await deleteCartItemData(cartId);
-        if (isDeleted === false) {
+        // Verify cart exists (additional check after middleware)
+        const cartData = await checkCartExists(cartId);
+        if (!cartData) {
             return Promise.reject({
                 status: "failed",
-                message: "Cart item not found or failed to delete",
+                message: "Cart item not found",
+            });
+        }
+
+        // Double-check ownership for customers (security layer)
+        if (user.role === 'customer' && user.customer_id !== cartData.customer_id) {
+            return Promise.reject({
+                status: "failed",
+                message: "Unauthorized: You can only delete your own cart items",
+            });
+        }
+
+        const isDeleted = await deleteCartItemData(cartId);
+        if (!isDeleted) {
+            return Promise.reject({
+                status: "failed",
+                message: "Failed to delete cart item",
             });
         }
 
@@ -38,7 +67,7 @@ const deleteCartItem = async (requestData) => {
         console.error("Error during cart item deletion:", err);
         return Promise.reject({
             status: "failed",
-            message: err.message,
+            message: err.message || "An error occurred while deleting cart item",
         });
     }
 };

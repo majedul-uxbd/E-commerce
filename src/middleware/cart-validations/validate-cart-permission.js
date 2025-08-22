@@ -1,9 +1,6 @@
-const { pool } = require("../../DB/pool");
-
 const validateCartPermission = async (req, res, next) => {
     try {
         const user = req.user;
-
         console.log("🔍 Debug - User from JWT:", user);
 
         // Check if user is admin
@@ -12,31 +9,20 @@ const validateCartPermission = async (req, res, next) => {
             return next();
         }
 
-        // For customers, auto-assign their customer_id
+        // For customers, use customer_id from JWT token
         if (user && user.role === 'customer') {
-            try {
-                const _query = `SELECT id FROM customers WHERE user_id = ?`;
-                const [rows] = await pool.query(_query, [user.id]);
-
-                if (rows.length === 0) {
-                    console.log("❌ No customer record found for user_id:", user.id);
-                    return res.status(404).send({
-                        status: "failed",
-                        message: "Customer record not found",
-                    });
-                }
-
-                // Auto-assign the customer's own ID - no need for validation
-                req.body.customer_id = rows[0].id;
-                console.log("✅ Auto-assigned customer_id:", rows.id);
-                return next();
-            } catch (dbError) {
-                console.error("❌ Database error during permission check:", dbError);
-                return res.status(500).send({
+            if (!user.customer_id) {
+                console.log("❌ No customer_id in JWT token for user:", user.id);
+                return res.status(400).send({
                     status: "failed",
-                    message: "Server error during permission validation",
+                    message: "Invalid token: customer profile not found",
                 });
             }
+
+            // the customer's own ID from JWT token
+            req.body.customer_id = user.customer_id;
+            console.log("✅ customer_id from JWT:", user.customer_id);
+            return next();
         }
 
         return res.status(403).send({

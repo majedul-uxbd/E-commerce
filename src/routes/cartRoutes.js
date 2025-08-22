@@ -3,9 +3,7 @@ const jwtAuth = require('../middleware/jwtAuth');
 const { addCartItem } = require('../main/carts/add-cart');
 const validateCartData = require('../middleware/cart-validations/validate-cart-data');
 const validateCartPermission = require('../middleware/cart-validations/validate-cart-permission');
-const validateCustomerId = require('../middleware/customer-validation/validateCustomerId');
 const { getCustomerCartItems } = require('../main/carts/get-customer-carts');
-const validateCartId = require('../middleware/cart-validations/validate-cart-id');
 const { deleteCartItem } = require('../main/carts/delete-cart');
 const validateCartOwnership = require('../middleware/cart-validations/validate-cart-ownership');
 
@@ -36,7 +34,7 @@ cartRouter.post("/", jwtAuth, validateCartPermission, validateCartData, async (r
 // For getting customer cart items - auto-assign customer_id
 cartRouter.post("/getCustomerId", jwtAuth, validateCartPermission, async (req, res) => {
     const requestData = {
-        customerId: req.body.customer_id, // This will be auto-assigned by middleware
+        customerId: req.body.customer_id,
         user: req.user
     };
 
@@ -45,7 +43,12 @@ cartRouter.post("/getCustomerId", jwtAuth, validateCartPermission, async (req, r
             return res.status(200).send({
                 status: data.status,
                 message: data.message,
+                customer_info: data.customer_info,
                 cartItems: data.cartItems,
+                summary: {
+                    total_items: data.total_items,
+                    total_amount: data.total_amount
+                }
             });
         })
         .catch((error) => {
@@ -57,7 +60,7 @@ cartRouter.post("/getCustomerId", jwtAuth, validateCartPermission, async (req, r
 });
 
 
-cartRouter.delete("/delete-cart", jwtAuth, validateCartOwnership, async (req, res) => {
+cartRouter.post("/delete-cart", jwtAuth, validateCartOwnership, async (req, res) => {
     const requestData = {
         cartId: req.body.cartId,
         user: req.user

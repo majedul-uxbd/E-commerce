@@ -27,27 +27,30 @@ const validateCartOwnership = async (req, res, next) => {
 
         // Check if user is admin
         if (user && user.role === 'admin') {
+            console.log("✅ Admin access granted for cart deletion");
             return next();
         }
 
-        // For customers, check if they own this cart item
+        // For customers, use customer_id from JWT token
         if (user && user.role === 'customer') {
-            // Get user's customer_id from customers table
-            const customerQuery = `SELECT id FROM customers WHERE user_id = ?`;
-            const [customerRows] = await pool.query(customerQuery, [user.id]);
-
-            if (customerRows.length === 0) {
-                return res.status(404).send({
+            if (!user.customer_id) {
+                console.log("❌ No customer_id in JWT token");
+                return res.status(400).send({
                     status: "failed",
-                    message: "Customer record not found",
+                    message: "Invalid token: customer profile not found",
                 });
             }
 
-            const userCustomerId = customerRows[0].id;
-
             // Check if the cart belongs to this customer
-            if (userCustomerId === cartOwnerCustomerId) {
+            if (user.customer_id === cartOwnerCustomerId) {
+                console.log("✅ Cart ownership verified for customer:", user.customer_id);
                 return next();
+            } else {
+                console.log(`❌ Cart ownership mismatch. User: ${user.customer_id}, Cart Owner: ${cartOwnerCustomerId}`);
+                return res.status(403).send({
+                    status: "failed",
+                    message: "You can only delete your own cart items",
+                });
             }
         }
 
